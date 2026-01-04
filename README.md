@@ -7,12 +7,14 @@ UK Companies House data. The system ingests structured company data via API,
 validates and normalises it, stores it in Microsoft SQL Server, and produces
 analytics-ready outputs to support commercial and financial analysis of UK SMEs.
 
-
 ## Target Universe
-UK SMEs (to be defined by industry and region).
+
+UK Small and Medium-sized Enterprises (SMEs), segmented by industry (SIC codes)
+and geographic region.
 
 ## Data Sources
-Public business directories and company websites.
+
+- UK Companies House API (official corporate registry)
 
 ## Outputs
 - Normalised SQL database
