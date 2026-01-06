@@ -1,10 +1,8 @@
 from __future__ import annotations
-
 import os
 import time
 import random
 from typing import Any, Dict, List, Optional
-
 import requests
 from dotenv import load_dotenv
 
