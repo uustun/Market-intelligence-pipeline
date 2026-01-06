@@ -1,5 +1,13 @@
+Python
+SQL Server
+Companies House API
+Pandas (for exports)
+Git
+requests
+python-dotenv
+pydantic
 pandas
 sqlalchemy
-beautifulsoup4
-requests
-lxml
+pyodbc
+
+# No beutiful soup used unfortunately.
