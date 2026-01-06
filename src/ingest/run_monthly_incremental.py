@@ -1,14 +1,12 @@
 from __future__ import annotations
-
 import os
 import csv
 from datetime import date
 from typing import Tuple, Optional
-
 from src.db.connection import get_conn
 from src.ingest.ch_client import advanced_search_companies
 
-# --- Geography (Luton -> MK corridor) ---
+# (Luton to MK corridor
 LOCATIONS = [
     "Luton",
     "Dunstable",
@@ -21,13 +19,12 @@ LOCATIONS = [
     "Milton Keynes",
 ]
 
-# You can override via env:  set SIC_CODES="62020,62012"
 DEFAULT_SIC_CODES = ["62020", "62012"]
 
 PAGE_SIZE = int(os.getenv("PAGE_SIZE", "200"))
 COMMIT_EVERY = int(os.getenv("COMMIT_EVERY", "200"))
 
-# Optional: user can set TARGET_MONTH=YYYY-MM. If blank/invalid, default previous month.
+# Optional: user can set TARGET_MONTH=YYYY-MM
 TARGET_MONTH_ENV = os.getenv("TARGET_MONTH", "").strip()
 
 
@@ -298,7 +295,7 @@ def main() -> None:
             print(f"New companies exported: {new_count}")
             print(f"CSV written to: {out_path}")
 
-            # Optional: send email with attachment
+            #  send email with attachment
             if os.getenv("SEND_EMAIL", "0") == "1":
                 from src.notifications.send_email import send_csv_email
 
