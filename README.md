@@ -7,7 +7,7 @@ It was built to support recurring commercial analysis of UK SMEs by industry (SI
 
 The pipeline ingests company data via the Companies House API, normalises it into a SQL Server database, and produces a monthly extract of newly incorporated companies for downstream analysis and outreach.
 
-The design prioritises data quality, idempotency, and operational reliability over raw scraping volume.
+The design prioritises data quality, uniqueness, and operational reliability over raw scraping volume.
 
 ## Target Scope
 
