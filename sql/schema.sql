@@ -1,5 +1,5 @@
 -- Companies House Market Intelligence Schema
-# Core design
+-- Core design
 
 CREATE TABLE companies (
     company_number VARCHAR(20) PRIMARY KEY,
