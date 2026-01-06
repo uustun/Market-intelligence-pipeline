@@ -1,13 +1,11 @@
 from __future__ import annotations
-
 import os
 import time
 from typing import Optional
-
 from src.db.connection import get_conn
 from src.ingest.ch_client import advanced_search_companies
 
-# --- Target universe (Luton radius + Milton Keynes) ---
+# --- Target Luton radius + Milton Keynes
 LOCATIONS = [
     "Luton",
     "Dunstable",
@@ -20,18 +18,18 @@ LOCATIONS = [
     "Milton Keynes",
 ]
 
-# --- Filters ---
+# Filters 
 SIC_CODES = ["62020", "62012"]
 
 
-# Default to 2018..2025 unless overridden by env vars
+# Default to 2018..2025 
 MIN_YEAR = int(os.getenv("MIN_YEAR", "2018"))
 MAX_YEAR = int(os.getenv("MAX_YEAR", "2025"))  # inclusive
 
 PAGE_SIZE = int(os.getenv("PAGE_SIZE", "200"))
 MAX_RECORDS = int(os.getenv("MAX_RECORDS", "500"))  # total cap across all locations
 
-# --- DB / resilience knobs ---
+# DB / resilience knobs 
 COMMIT_EVERY = int(os.getenv("COMMIT_EVERY", "50"))
 MAX_CONSECUTIVE_PAGE_ERRORS = int(os.getenv("MAX_CONSECUTIVE_PAGE_ERRORS", "3"))
 SLEEP_ON_ERROR_SECONDS = float(os.getenv("SLEEP_ON_ERROR_SECONDS", "1.0"))
@@ -195,7 +193,7 @@ def main() -> None:
                         if inserted_total >= MAX_RECORDS:
                             break
 
-                        # Defensive check (API should already enforce)
+                        # API CHeck
                         y = parse_year(it.get("date_of_creation"))
                         if y is None or y < MIN_YEAR or y > MAX_YEAR:
                             continue
