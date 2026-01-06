@@ -1,9 +1,7 @@
 from __future__ import annotations
-
 import os
 from datetime import date
 from typing import Optional
-
 from src.db.connection import get_conn
 from src.ingest.ch_client import advanced_search_companies
 
@@ -19,7 +17,7 @@ LOCATIONS = [
     "Milton Keynes",
 ]
 
-# Recommend: keep it tight but meaningful
+# Relevant? Codes
 SIC_CODES = ["62020", "62012", "62090"]
 
 PAGE_SIZE = int(os.getenv("PAGE_SIZE", "200"))
