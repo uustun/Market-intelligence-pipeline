@@ -1,8 +1,11 @@
 import os
 import pyodbc
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv()
+# Load .env relative to this file
+ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
+load_dotenv(dotenv_path=ENV_PATH)
 
 SERVER = os.getenv("SQL_SERVER")
 DATABASE = os.getenv("SQL_DATABASE")

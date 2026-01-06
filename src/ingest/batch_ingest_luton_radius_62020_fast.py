@@ -1,9 +1,7 @@
 from __future__ import annotations
-
 import os
 import time
 from typing import Optional
-
 from src.db.connection import get_conn
 from src.ingest.ch_client import advanced_search_companies
 

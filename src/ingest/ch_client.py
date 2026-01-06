@@ -5,8 +5,11 @@ import random
 from typing import Any, Dict, List, Optional
 import requests
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv()
+# Load .env relative to repo root (not CWD)
+ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv(dotenv_path=ENV_PATH)
 
 BASE_URL = "https://api.company-information.service.gov.uk"
 CH_API_KEY = os.getenv("CH_API_KEY")

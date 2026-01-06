@@ -1,8 +1,11 @@
 import os
 import pyodbc
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv()
+# (repo-safe)
+ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv(dotenv_path=ENV_PATH)
 
 def get_conn():
     server = os.getenv("SQL_SERVER")

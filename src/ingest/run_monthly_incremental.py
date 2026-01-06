@@ -4,6 +4,7 @@ import os
 import csv
 from datetime import date
 from typing import Tuple, Optional
+from pathlib import Path
 
 from src.db.connection import get_conn
 from src.ingest.ch_client import advanced_search_companies
@@ -29,6 +30,9 @@ COMMIT_EVERY = int(os.getenv("COMMIT_EVERY", "200"))
 
 # set TARGET_MONTH=YYYY-MM. If blank, defaults to previous month.
 TARGET_MONTH_ENV = os.getenv("TARGET_MONTH", "").strip()
+
+# Repo root (assumes this file is under repo_root/src/...)
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def previous_month_yyyy_mm(today: Optional[date] = None) -> str:
@@ -188,7 +192,9 @@ def export_new_companies_csv(conn, run_id: int, out_path: str) -> int:
     rows = cur.fetchall()
     cols = [d[0] for d in cur.description]
 
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    out_dir = Path(out_path).parent
+    out_dir.mkdir(parents=True, exist_ok=True)
+
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(cols)
@@ -252,7 +258,7 @@ def main() -> None:
 
                     start_index += PAGE_SIZE
 
-            out_path = f"data/exports/new_companies_{target_month}_run_{run_id}.csv"
+            out_path = str(REPO_ROOT / "data" / "exports" / f"new_companies_{target_month}_run_{run_id}.csv")
             conn.commit()
             new_count = export_new_companies_csv(conn, run_id, out_path)
 
