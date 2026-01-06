@@ -8,7 +8,7 @@ from typing import Tuple, Optional
 from src.db.connection import get_conn
 from src.ingest.ch_client import advanced_search_companies
 
-# --- Universe ---
+# --- Geography (Luton -> MK corridor) ---
 LOCATIONS = [
     "Luton",
     "Dunstable",
@@ -27,8 +27,7 @@ DEFAULT_SIC_CODES = ["62020", "62012"]
 PAGE_SIZE = int(os.getenv("PAGE_SIZE", "200"))
 COMMIT_EVERY = int(os.getenv("COMMIT_EVERY", "200"))
 
-# Optional override, but safe defaults exist:
-#   set TARGET_MONTH=2025-12
+# Optional: user can set TARGET_MONTH=YYYY-MM. If blank/invalid, default previous month.
 TARGET_MONTH_ENV = os.getenv("TARGET_MONTH", "").strip()
 
 
@@ -36,14 +35,12 @@ def previous_month_yyyy_mm(today: Optional[date] = None) -> str:
     today = today or date.today()
     y, m = today.year, today.month
     if m == 1:
-        return f"{y-1}-12"
-    return f"{y}-{m-1:02d}"
+        return f"{y - 1}-12"
+    return f"{y}-{m - 1:02d}"
 
 
 def normalize_target_month(raw: str) -> str:
-    """
-    Return YYYY-MM. If invalid/blank, default to previous month.
-    """
+    """Return YYYY-MM. If invalid/blank, default to previous month."""
     raw = (raw or "").strip()
     if not raw:
         return previous_month_yyyy_mm()
@@ -63,9 +60,7 @@ def normalize_target_month(raw: str) -> str:
 
 
 def month_range(yyyy_mm: str) -> Tuple[date, date]:
-    """
-    Returns (start_inclusive, end_exclusive) for the month.
-    """
+    """Returns (start_inclusive, end_exclusive) for the month."""
     y, m = map(int, yyyy_mm.split("-"))
     start = date(y, m, 1)
     if m == 12:
@@ -159,7 +154,6 @@ def replace_address(cur, company_number: str, it: dict) -> None:
     addr = it.get("registered_office_address") or {}
 
     cur.execute("DELETE FROM dbo.company_addresses WHERE company_number = ?;", company_number)
-
     cur.execute(
         """
         INSERT INTO dbo.company_addresses (company_number, locality, region, postal_code, country)
@@ -176,7 +170,7 @@ def replace_address(cur, company_number: str, it: dict) -> None:
 def replace_sic(cur, company_number: str, sic_list: list[str], existing_sic: set[str]) -> None:
     cur.execute("DELETE FROM dbo.company_sic WHERE company_number = ?;", company_number)
 
-    for sic in sorted(set(sic_list or [])):  # dedupe defensively
+    for sic in sorted(set(sic_list or [])):  # dedupe
         if sic not in existing_sic:
             continue
         cur.execute(
@@ -209,7 +203,6 @@ def export_new_companies_csv(conn, run_id: int, out_path: str) -> int:
     cols = [d[0] for d in cur.description]
 
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
-
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(cols)
@@ -224,7 +217,7 @@ def main() -> None:
 
     start_date, end_date = month_range(target_month)
     incorporated_from = str(start_date)
-    incorporated_to = str(end_date)  # end-exclusive is OK for boundary handling
+    incorporated_to = str(end_date)  # end_exclusive
 
     note = (
         f"INCREMENTAL month={target_month} "
@@ -237,7 +230,6 @@ def main() -> None:
 
     with get_conn() as conn:
         cur = conn.cursor()
-
         cur.execute("SELECT sic_code FROM dbo.sic_codes;")
         existing_sic = {row[0] for row in cur.fetchall()}
 
@@ -299,9 +291,28 @@ def main() -> None:
             finish_run(cur, run_id, status="success", records_inserted=inserted_total)
             conn.commit()
 
-            print(f"\nINCREMENTAL DONE. run_id={run_id} inserted/updated={inserted_total} scanned={scanned_total}")
+            print(
+                f"\nINCREMENTAL DONE. run_id={run_id} "
+                f"inserted/updated={inserted_total} scanned={scanned_total}"
+            )
             print(f"New companies exported: {new_count}")
             print(f"CSV written to: {out_path}")
+
+            # Optional: send email with attachment
+            if os.getenv("SEND_EMAIL", "0") == "1":
+                from src.notifications.send_email import send_csv_email
+
+                send_csv_email(
+                    csv_path=out_path,
+                    subject=f"Companies House MI - New companies ({target_month})",
+                    body=(
+                        f"Attached: new companies for {target_month}\n"
+                        f"run_id={run_id}\n"
+                        f"locations={len(LOCATIONS)} | sic={','.join(sic_codes)}\n"
+                        f"rows_in_csv={new_count}\n"
+                    ),
+                )
+                print("Email sent.")
 
         except Exception:
             conn.rollback()
